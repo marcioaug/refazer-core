@@ -44,8 +44,8 @@ namespace Refazer.Core
                     libraryPaths: new[] { pathToDslLib });
         }
 
-        public IEnumerable<Transformation> LearnTransformations(List<Tuple<string, string>> examples,
-            int numberOfPrograms = 1, string ranking = "specific")
+        public IEnumerable<Transformation> LearnTransformations(List<Tuple<string, string>> examples, int numberOfPrograms = 1, 
+            string ranking = "specific")
         {
             var spec = CreateExampleSpec(examples);
             //TODO: this is not thread safe. If multiple instances of Refazer are changing 
@@ -98,6 +98,18 @@ namespace Refazer.Core
             }
             var spec = new ExampleSpec(proseExamples);
             return spec;
+        }
+
+        private ExampleWithNegativesSpec CreateExampleWithNegativeSpec(List<Tuple<string, string>> examples)
+        {
+            var proseExamples = new Dictionary<State, (object, IEnumerable<object>)>();
+            foreach (var example in examples)
+            {
+                var input = CreateInputState(example.Item1);
+                var astAfter = NodeWrapper.Wrap(ASTHelper.ParseContent(example.Item2));
+                proseExamples.Add(input, (astAfter, new List<object>() {astAfter}));
+            }
+            return new ExampleWithNegativesSpec(proseExamples);
         }
 
         public State CreateInputState(string program)
